@@ -1,0 +1,90 @@
+;
+; ktl-test.inf
+;
+
+[Version]
+Signature="$WINDOWS NT$"
+Class=KtlTest
+ClassGuid={6421BFBF-DDBA-47FE-A8E7-FD7299FCE6CA}
+Provider=%ManufacturerName%
+CatalogFile=ktl-test.cat
+DriverVer=
+
+[DestinationDirs]
+DefaultDestDir = 12
+
+; ================= Class section =====================
+
+[ClassInstall32]
+Addreg=KtlTestClassReg
+
+[KtlTestClassReg]
+HKR,,,0,%ClassName%
+HKR,,Icon,,-5
+
+[SourceDisksNames]
+1 = %DiskName%,,,""
+
+[SourceDisksFiles]
+ktl-test.sys  = 1,,
+
+;*****************************************
+; Install Section
+;*****************************************
+
+[Manufacturer]
+%ManufacturerName%=Standard,NT$ARCH$
+
+[Standard.NT$ARCH$]
+%ktl-test.DeviceDesc%=ktl-test_Device, ROOT\KTLTEST
+
+[ktl-test_Device.NT]
+CopyFiles=Drivers_Dir
+
+[Drivers_Dir]
+ktl-test.sys
+
+;-------------- Service installation
+[ktl-test_Device.NT.Services]
+AddService = ktl-test,%SPSVCINST_ASSOCSERVICE%, ktl-test_Service_Inst
+
+; -------------- ktl-test driver install sections
+[ktl-test_Service_Inst]
+DisplayName    = %ktl-test.SVCDESC%
+ServiceType    = 1               ; SERVICE_KERNEL_DRIVER
+StartType      = 3               ; SERVICE_DEMAND_START
+ErrorControl   = 1               ; SERVICE_ERROR_NORMAL
+ServiceBinary  = %12%\ktl-test.sys
+
+;
+;--- ktl-test_Device Coinstaller installation ------
+;
+
+[DestinationDirs]
+ktl-test_Device_CoInstaller_CopyFiles = 11
+
+[ktl-test_Device.NT.CoInstallers]
+AddReg=ktl-test_Device_CoInstaller_AddReg
+CopyFiles=ktl-test_Device_CoInstaller_CopyFiles
+
+[ktl-test_Device_CoInstaller_AddReg]
+HKR,,CoInstallers32,0x00010000, "WdfCoInstaller$KMDFCOINSTALLERVERSION$.dll,WdfCoInstaller"
+
+[ktl-test_Device_CoInstaller_CopyFiles]
+WdfCoInstaller$KMDFCOINSTALLERVERSION$.dll
+
+[SourceDisksFiles]
+WdfCoInstaller$KMDFCOINSTALLERVERSION$.dll=1 ; make sure the number matches with SourceDisksNames
+
+[ktl-test_Device.NT.Wdf]
+KmdfService =  ktl-test, ktl-test_wdfsect
+[ktl-test_wdfsect]
+KmdfLibraryVersion = $KMDFVERSION$
+
+[Strings]
+SPSVCINST_ASSOCSERVICE= 0x00000002
+ManufacturerName="Andrew Gaspar"
+ClassName="KTLTest"
+DiskName = "ktl-test Installation Disk"
+ktl-test.DeviceDesc = "ktl-test Device"
+ktl-test.SVCDESC = "ktl-test Service"
